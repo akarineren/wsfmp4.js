@@ -35,6 +35,32 @@ let wsfmp4 = new WSFMP4(media, {
 });
 ```
 
+## Local Demo
+
+The demo frontend and server live in the `demo/` directory. The demo server reads pre-generated fMP4 segments from `demo/segments` and streams them over WebSocket.
+
+```shell
+npm install
+npm run dev
+```
+
+By default the demo server:
+
+- reads `demo/segments/*.mp4`
+- serves WebSocket data on `ws://127.0.0.1:6060/stream`
+- sends 256 KB chunks every 200 ms
+
+The frontend demo opens at `http://127.0.0.1:5173/demo/` and connects to `/stream` on the same origin. In local development Vite proxies `/stream` to the demo server, so you only need one browser address and one startup command.
+
+You can override these values with environment variables:
+
+- `WSFMP4_SOURCE_DIR`
+- `WSFMP4_HOST`
+- `WSFMP4_PORT`
+- `WSFMP4_PATH`
+- `WSFMP4_CHUNK_SIZE`
+- `WSFMP4_INTERVAL_MS`
+
 ### Parameter
 
 - debug Enable debug mode, will output detailed log default false

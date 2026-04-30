@@ -28,11 +28,14 @@
     "require": "./dist/wsfmp4.cjs"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "node ./demo/dev.js",
+    "dev:frontend": "vite",
+    "build": "vite build",
+    "demo:server": "node ./demo/server.js"
   },
   "devDependencies": {
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "ws": "^8.18.3"
   },
   "dependencies": {
     "mp4box": "^0.5.2"

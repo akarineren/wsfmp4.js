@@ -15,6 +15,20 @@ export default defineConfig({
     }
   },
   server: {
-    host: "0.0.0.0"
+    host: "0.0.0.0",
+    proxy: {
+      "/stream": {
+        target: "ws://127.0.0.1:6060",
+        ws: true,
+        configure: (proxy) => {
+          proxy.on("error", (err) => {
+            if (err.code === "ECONNRESET") {
+              return;
+            }
+            console.error("[vite proxy]", err);
+          });
+        },
+      },
+    },
   }
 });
