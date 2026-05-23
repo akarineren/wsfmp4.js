@@ -24,8 +24,11 @@ MediaSource.prototype.addSourceBuffer = function (mime) {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const wsProto = location.protocol === "https:" ? "wss:" : "ws:";
+// Allow ?ws=wss://host/path override — useful for deployed demos where
+// the WebSocket backend is not co-located with the static frontend.
+const wsParam = new URLSearchParams(location.search).get("ws");
 const OPTIONS = {
-  url:   `${wsProto}//${location.host}/stream`,
+  url:   wsParam || `${wsProto}//${location.host}/stream`,
   mode:  "sequence",
   debug: false,
 };

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wsfmp4.js — demo</title>
+  <!-- init theme before paint to avoid flash -->
+  <script>
+    (function () {
+      var t = localStorage.getItem('wsfmp4-theme') || 'light';
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    /* ── Light theme (default) ──────────────────────────────── */
+    :root,
+    [data-theme="light"] {
+      --bg:           oklch(97% 0.003 250);
+      --surface:      oklch(100% 0 0);
+      --border:       oklch(88% 0.006 250);
+      --border-sub:   oklch(93% 0.004 250);
+
+      --text:         oklch(14% 0.008 250);
+      --text-2:       oklch(44% 0.010 250);
+      --text-3:       oklch(63% 0.008 250);
+
+      --amber:        oklch(52% 0.17 58);
+      --amber-dim:    oklch(52% 0.17 58 / 0.16);
+      --amber-faint:  oklch(52% 0.17 58 / 0.07);
+      --green:        oklch(44% 0.18 148);
+      --green-dim:    oklch(44% 0.18 148 / 0.10);
+      --purple-muted: oklch(50% 0.10 290);
+
+      --syn-str:      oklch(46% 0.12 58);
+
+      --font: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'IBM Plex Mono', 'Fira Code', ui-monospace, monospace;
+      --pad: clamp(20px, 4vw, 48px);
+      --max: 1100px;
+    }
+
+    /* ── Dark theme ─────────────────────────────────────────── */
+    [data-theme="dark"] {
+      --bg:           oklch(8% 0.006 250);
+      --surface:      oklch(11.5% 0.008 250);
+      --border:       oklch(22% 0.012 250);
+      --border-sub:   oklch(15% 0.007 250);
+
+      --text:         oklch(90% 0.006 250);
+      --text-2:       oklch(56% 0.012 250);
+      --text-3:       oklch(34% 0.008 250);
+
+      --amber:        oklch(74% 0.14 65);
+      --amber-dim:    oklch(74% 0.14 65 / 0.18);
+      --amber-faint:  oklch(74% 0.14 65 / 0.07);
+      --green:        oklch(72% 0.19 148);
+      --green-dim:    oklch(72% 0.19 148 / 0.14);
+      --purple-muted: oklch(70% 0.09 290);
+
+      --syn-str:      oklch(72% 0.10 65);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .hdr {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border-sub);
+    }
+
+    .hdr-inner {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 13px var(--pad);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand { display: flex; align-items: baseline; gap: 10px; }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sep  { color: var(--text-3); font-weight: 300; }
+
+    .brand-desc {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-2);
+    }
+
+    .hdr-right { display: flex; align-items: center; gap: 12px; }
+
+    /* WS status badge */
+    .ws-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-3);
+      transition: border-color 0.3s, color 0.3s, background 0.3s;
+      user-select: none;
+    }
+
+    .ws-badge.state-connecting {
+      border-color: var(--amber-dim);
+      color: var(--amber);
+      background: var(--amber-faint);
+    }
+
+    .ws-badge.state-connected {
+      border-color: var(--green-dim);
+      color: var(--green);
+      background: var(--green-dim);
+    }
+
+    .ws-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      flex-shrink: 0;
+    }
+
+    .state-connecting .ws-dot { animation: blink-dot 1.5s ease-in-out infinite; }
+    .state-connected  .ws-dot { animation: breathe  3.5s ease-in-out infinite; }
+
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.2; transform: scale(0.6); }
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    /* Theme toggle button */
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-2);
+      padding: 4px;
+      border-radius: 2px;
+      transition: color 0.2s;
+      line-height: 0;
+    }
+
+    .theme-btn:hover { color: var(--text); }
+
+    /* show moon (go dark) in light, sun (go light) in dark */
+    .icon-moon { display: block; }
+    .icon-sun  { display: none; }
+
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun  { display: block; }
+
+    .gh-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .gh-link:hover { color: var(--text); }
+
+    /* ── Main ───────────────────────────────────────────────── */
+    .main {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px var(--pad) 80px;
+    }
+
+    /* ── Video ──────────────────────────────────────────────── */
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      background: #000;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    .video-overlay.hidden { opacity: 0; }
+
+    .overlay-spinner {
+      width: 30px;
+      height: 30px;
+      border: 1.5px solid oklch(30% 0 0);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .overlay-text {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: oklch(40% 0 0);
+      animation: blink-dot 2s ease-in-out infinite;
+    }
+
+    /* ── Codec bar ──────────────────────────────────────────── */
+    .codec-bar {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      border-top: none;
+      background: var(--surface);
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .cb-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cb-item + .cb-item { border-left: 1px solid var(--border-sub); }
+
+    .cb-key {
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+
+    .cb-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Data panels ────────────────────────────────────────── */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      background: var(--border-sub);
+      gap: 1px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+
+    .panel {
+      background: var(--bg);
+      padding: 22px 24px;
+    }
+
+    .panel-label {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 16px;
+    }
+
+    .row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border-sub);
+    }
+
+    .row:last-child { border-bottom: none; }
+
+    .row-key {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-2);
+      flex-shrink: 0;
+    }
+
+    .row-val {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+      transition: color 0.12s;
+    }
+
+    .row-val.flash { color: var(--amber); }
+
+    .c-amber  { color: var(--amber) !important; }
+    .c-green  { color: var(--green) !important; }
+    .c-muted  { color: var(--text-3) !important; }
+    .c-purple { color: var(--purple-muted) !important; }
+
+    /* ── Code section ───────────────────────────────────────── */
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .sec-label {
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+
+    .sec-rule { flex: 1; height: 1px; background: var(--border-sub); }
+
+    .code-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      overflow: auto;
+    }
+
+    .code-wrap pre {
+      padding: 20px 22px;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .kw  { color: var(--amber); }
+    .str { color: var(--syn-str); }
+    .num { color: var(--green); }
+    .fn  { color: var(--purple-muted); }
+    .cm  { color: var(--text-3); font-style: italic; }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .brand-desc { display: none; }
+      .data-grid  { grid-template-columns: 1fr; }
+      .codec-bar  { flex-wrap: wrap; }
+      .cb-item    { min-width: 50%; }
+      .cb-item + .cb-item { border-left: none; border-top: 1px solid var(--border-sub); }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-DDDq-95d.js"></script>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="brand">
+      <span class="brand-name">wsfmp4.js</span>
+      <span class="brand-sep">—</span>
+      <span class="brand-desc">WebSocket fmp4 stream player</span>
+    </div>
+    <div class="hdr-right">
+      <div class="ws-badge state-connecting" id="ws-badge">
+        <span class="ws-dot"></span>
+        <span id="ws-label">connecting</span>
+      </div>
+
+      <button class="theme-btn" id="theme-btn" aria-label="Toggle theme" title="Toggle theme">
+        <!-- moon: shown in light mode → click goes dark -->
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <!-- sun: shown in dark mode → click goes light -->
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+
+      <a href="https://github.com/akarineren/wsfmp4.js" class="gh-link" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="video-wrap">
+    <video id="video" autoplay muted playsinline controls></video>
+    <div class="video-overlay" id="video-overlay">
+      <div class="overlay-spinner"></div>
+      <span class="overlay-text" id="overlay-text">connecting to stream</span>
+    </div>
+  </div>
+
+  <div class="codec-bar">
+    <div class="cb-item">
+      <span class="cb-key">codec</span>
+      <span class="cb-val" id="cb-codec">—</span>
+    </div>
+    <div class="cb-item">
+      <span class="cb-key">mode</span>
+      <span class="cb-val" id="cb-mode">—</span>
+    </div>
+    <div class="cb-item">
+      <span class="cb-key">resolution</span>
+      <span class="cb-val" id="cb-res">—</span>
+    </div>
+    <div class="cb-item">
+      <span class="cb-key">buffered</span>
+      <span class="cb-val" id="cb-buf">—</span>
+    </div>
+  </div>
+
+  <div class="data-grid">
+    <div class="panel">
+      <div class="panel-label">Live Stats</div>
+      <div class="row"><span class="row-key">currentTime</span>   <span class="row-val" id="s-cur">—</span></div>
+      <div class="row"><span class="row-key">buffered.start</span><span class="row-val" id="s-bs">—</span></div>
+      <div class="row"><span class="row-key">buffered.end</span>  <span class="row-val" id="s-be">—</span></div>
+      <div class="row"><span class="row-key">ahead</span>         <span class="row-val" id="s-ah">—</span></div>
+      <div class="row"><span class="row-key">readyState</span>   <span class="row-val" id="s-rs">—</span></div>
+      <div class="row"><span class="row-key">networkState</span> <span class="row-val" id="s-ns">—</span></div>
+    </div>
+    <div class="panel">
+      <div class="panel-label">Configuration</div>
+      <div id="opts-rows"></div>
+    </div>
+  </div>
+
+  <div class="sec-head">
+    <span class="sec-label">Quick Start</span>
+    <div class="sec-rule"></div>
+  </div>
+  <div class="code-wrap">
+    <pre><code id="code-snippet"></code></pre>
+  </div>
+
+</main>
+
+</body>
+</html>
