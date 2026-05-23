@@ -1,5 +1,7 @@
 import { defineConfig } from "vite";
 
+const frontendPort = Number(process.env.WSFMP4_FRONTEND_PORT || 4000);
+
 export default defineConfig({
   build: {
     lib: {
@@ -16,6 +18,8 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
+    port: frontendPort,
+    strictPort: true,
     proxy: {
       "/stream": {
         target: "ws://127.0.0.1:6060",

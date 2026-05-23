@@ -11,8 +11,8 @@
     "live",
     "live-streaming"
   ],
-  "homepage": "https://github.com/yumexupanic/wsfmp4.js",
-  "authors": "yumexupanic <yumexupanic+wsfmp4@gmail.com>",
+  "homepage": "https://github.com/akarineren/wsfmp4.js",
+  "authors": "akarineren <akarineren@gmail.com>",
   "version": "0.0.6",
   "type": "module",
   "files": [
@@ -29,9 +29,7 @@
   },
   "scripts": {
     "dev": "node ./demo/dev.js",
-    "dev:frontend": "vite",
-    "build": "vite build",
-    "demo:server": "node ./demo/server.js"
+    "build": "vite build"
   },
   "devDependencies": {
     "vite": "^5.0.0",
