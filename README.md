@@ -1,6 +1,6 @@
 # wsfmp4.js
 
-[English](https://github.com/yumexupanic/wsfmp4.js) | [简体中文](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_jp.md) 
+[English](https://github.com/akarineren/wsfmp4.js) | [简体中文](https://github.com/akarineren/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/akarineren/wsfmp4.js/blob/main/README_jp.md) 
 
 wsfmp4.js is a JavaScript library aimed at playing fmp4 video segments in browsers that support Media Source Extensions (MSE). This library utilizes WebSocket technology to achieve real-time transmission of fmp4 segment data and dynamically adds these segments to the media stream for playback through MSE.
 
@@ -13,7 +13,8 @@ Streaming service (you can skip this step if you have streaming)
 
 ```shell
 # ws://127.0.0.1:6060/stream
-docker run -d -p 6060:6060 yumexupanic/wsfmp4
+git clone https://github.com/akarineren/wsfmp4.js && cd wsfmp4.js
+npm install && node demo/server.js
 ```
 
 ```javascript

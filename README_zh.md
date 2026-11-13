@@ -1,6 +1,6 @@
 # wsfmp4.js
 
-[English](https://github.com/yumexupanic/wsfmp4.js) | [简体中文](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_jp.md) 
+[English](https://github.com/akarineren/wsfmp4.js) | [简体中文](https://github.com/akarineren/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/akarineren/wsfmp4.js/blob/main/README_jp.md) 
 
 wsfmp4.js 支持在浏览器中使用 websocket 传输的 fmp4 数据进行播放，使用 MSE 技术实现，支持 h264 以及 h265。
 
@@ -14,7 +14,8 @@ DEMO: <https://wsfmp4-js.pages.dev>
 
 ```shell
 # ws://127.0.0.1:6060/stream
-docker run -d -p 6060:6060 yumexupanic/wsfmp4
+git clone https://github.com/akarineren/wsfmp4.js && cd wsfmp4.js
+npm install && node demo/server.js
 ```
 
 ```javascript

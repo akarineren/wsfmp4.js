@@ -1,6 +1,6 @@
 # wsfmp4.js
 
-[English](https://github.com/yumexupanic/wsfmp4.js) | [简体中文](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/yumexupanic/wsfmp4.js/blob/main/README_jp.md) 
+[English](https://github.com/akarineren/wsfmp4.js) | [简体中文](https://github.com/akarineren/wsfmp4.js/blob/main/README_zh.md) | [日本語](https://github.com/akarineren/wsfmp4.js/blob/main/README_jp.md) 
 
 wsfmp4.jsは、MSE技術を使用して実装され、h264とh265をサポートするウェブソケット転送を使用して、ブラウザでfmp4データの再生をサポートしています。
 
@@ -14,7 +14,8 @@ DEMO: <https://wsfmp4-js.pages.dev>
 
 ```shell
 # ws://127.0.0.1:6060/stream
-docker run -d -p 6060:6060 yumexupanic/wsfmp4
+git clone https://github.com/akarineren/wsfmp4.js && cd wsfmp4.js
+npm install && node demo/server.js
 ```
 
 ```javascript
